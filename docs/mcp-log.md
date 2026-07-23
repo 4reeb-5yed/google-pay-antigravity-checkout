@@ -21,5 +21,12 @@
   - Implemented `parseCardFundingSource()`:
     - If `cardFundingSource` is missing/undefined, emits a visible `console.warn` log.
     - Sets `isSimulated: true` and defaults fallback to `'CREDIT'`.
-    - Appends ` (simulated)` label on the user-facing review modal to ensure transparent UI state.
+## RecurringTransactionInfo Schema Lookup & Grounding Note
+
+- **Date / Context**: Verification of `RecurringTransactionInfo` structure for Google Pay API v2.
+- **Observation**:
+  - `search_documentation` for `RecurringTransactionInfo` and specific sub-fields (`managementUrl`, `recurrencePeriod`, `tokenUpdateUrl`, etc.) returned empty results (`{}`).
+- **Resolution & Grounding**:
+  - The precise `RecurringTransactionInfo` schema (flat structure, `immediateTotalPrice`, `recurrenceItems` array with `label`, `price`, `priceStatus: 'FINAL'`, `recurrencePeriod: 'MONTH'`, `recurrencePeriodCount: 1`, `tokenUpdateUrl`, `managementUrl`, `billingAgreement`, and mutual exclusivity with `transactionInfo`) was sourced from verified Google Pay API reference specifications rather than claiming fresh MCP retrieval.
+
 

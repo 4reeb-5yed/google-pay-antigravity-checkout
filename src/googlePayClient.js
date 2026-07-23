@@ -89,17 +89,31 @@ export function renderGooglePayButton(container, onClickHandler, options = {}) {
 
 /**
  * Prepares the PaymentDataRequest object for loadPaymentData.
- * @param {Object} transactionInfo - Price, currency, status details
+ * Supports both standard one-time purchase requests and recurring transaction requests.
+ * 
+ * @param {Object} transactionData - Transaction info or recurringTransactionInfo object
  * @returns {Object} PaymentDataRequest
  */
-export function buildPaymentDataRequest(transactionInfo) {
-  return {
+export function buildPaymentDataRequest(transactionData) {
+  const baseRequest = {
     apiVersion: GPAY_CONFIG.apiVersion,
     apiVersionMinor: GPAY_CONFIG.apiVersionMinor,
     allowedPaymentMethods: [getCardPaymentMethod()],
-    merchantInfo: GPAY_CONFIG.merchantInfo,
-    transactionInfo: transactionInfo
+    merchantInfo: GPAY_CONFIG.merchantInfo
   };
+
+  // Check if payload is a recurring transaction request
+  if (transactionData && (transactionData.recurringTransactionInfo || transactionData.recurrenceItems)) {
+    const recurringPayload = transactionData.recurringTransactionInfo || transactionData;
+    return Object.assign(baseRequest, {
+      recurringTransactionInfo: recurringPayload
+    });
+  }
+
+  // Standard One-Time Transaction Path ($29.99 or single cart item)
+  return Object.assign(baseRequest, {
+    transactionInfo: transactionData
+  });
 }
 
 /**

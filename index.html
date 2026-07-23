@@ -25,17 +25,30 @@
     <main class="checkout-card">
       <section class="order-summary">
         <h2>Order Summary</h2>
-        <div class="item-row">
-          <div class="item-info">
-            <span class="item-title">AI Agent Developer Subscription</span>
-            <span class="item-desc">Monthly Pro Access — Antigravity Workspace</span>
-          </div>
-          <span class="item-price">$29.99</span>
+        <div class="plan-selector">
+          <label class="plan-option active" id="plan-option-recurring">
+            <input type="radio" name="checkout-plan" value="recurring" checked>
+            <div class="plan-details">
+              <span class="plan-name">Monthly Subscription <span class="badge">Recurring</span></span>
+              <span class="plan-desc">Monthly Pro Access — $14.99/month</span>
+            </div>
+            <span class="plan-price">$14.99/mo</span>
+          </label>
+
+          <label class="plan-option" id="plan-option-onetime">
+            <input type="radio" name="checkout-plan" value="onetime">
+            <div class="plan-details">
+              <span class="plan-name">One-Time Purchase</span>
+              <span class="plan-desc">Lifetime Single License Access</span>
+            </div>
+            <span class="plan-price">$29.99</span>
+          </label>
         </div>
+
         <div class="divider"></div>
         <div class="total-row">
-          <span>Total Amount</span>
-          <span class="total-price" id="cart-total">$29.99</span>
+          <span id="total-label">Monthly Total</span>
+          <span class="total-price" id="cart-total">$14.99<span id="total-period" style="font-size: 12px; color: var(--text-secondary);">/mo</span></span>
         </div>
       </section>
 
