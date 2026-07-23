@@ -132,6 +132,25 @@ A deliberate, separate pass through every file, independent of feature-building,
 
 ---
 
+## Phase 7 — CheckoutOption enhancement & enum grounding catch
+
+**Prompt given (from the codelab directly):**
+> Set `checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE'` on the `transactionInfo` object so the Google Pay payment sheet shows a "Pay" button instead of "Continue" for the one-time purchase flow. Use `search_documentation` to confirm the exact field name, allowed values, and whether `checkoutOption` belongs on `transactionInfo` for standard one-time purchases, on `recurringTransactionInfo` for subscriptions, or both.
+
+**MCP result & grounding catch:**
+`search_documentation` for `checkoutOption` returned high-level quickstart guides, but no raw snippet containing the field parameter or its allowed enum values.
+
+In the initial implementation plan draft, the non-Pay default enum value was asserted as `'DEFAULT_FOR_BUY_BUTTON'` — a fabricated string. The actual Google Pay API v2 standard enum values (confirmed via official reference docs and release specifications) are `'DEFAULT'`, `'COMPLETE_IMMEDIATE_PURCHASE'`, and `'CONTINUE_TO_REVIEW'`.
+
+**Fix & implementation:**
+- Corrected the implementation plan and logged the lookup in `mcp-log.md` explicitly as **sourced from official API reference docs, not MCP text snippets** (mirroring the `RecurringTransactionInfo` grounding note).
+- Added `checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE'` strictly to the one-time purchase path (`$29.99`) in `src/main.js`. Omitted it from `recurringTransactionInfo` (Monthly Subscription) as `checkoutOption` does not exist on the flat top-level recurring schema.
+- Kept `pricing.js`, `recurring.js`, and `guestCheckout.js` untouched as required.
+
+**Result:** verified end-to-end — one-time purchase request payload contains `checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE'` while subscription request payload remains unchanged.
+
+---
+
 ## What this process actually demonstrated
 
 Not "MCP makes AI coding reliable" — that's not what happened. What actually happened: MCP grounding worked correctly most of the time, failed silently or returned nothing useful a few real times, and in every one of those cases, **the thing that caught it was a human specifically checking**, not the tool itself. The repeatable pattern that mattered wasn't "trust MCP" — it was "prompt, ground, generate, then verify before accepting," applied consistently, including to the AI's own claims about what it had grounded.

@@ -44,7 +44,7 @@ An open standard letting an AI tool call structured tools on a remote server ins
 Instead of "vibe coding" purely off a natural-language prompt, every feature followed the same loop: *prompt → MCP lookup → grounded code generation → human review*. The prompts used for each feature are documented in [`docs/BUILD_STORY.md`](docs/BUILD_STORY.md).
 
 ### 3. Grounding isn't automatic — it has to be checked
-The most important thing this project actually demonstrated: MCP doesn't guarantee correctness by itself. Two real cases came up where the returned "grounded" information was still wrong or missing (see the bugs section below and the full record in [`docs/mcp-log.md`](docs/mcp-log.md)). The discipline that matters isn't "use MCP," it's "use MCP, and still verify the result."
+The most important thing this project actually demonstrated: MCP doesn't guarantee correctness by itself. Three real cases came up where the returned "grounded" information was still wrong or missing (see the bugs section below and the full record in [`docs/mcp-log.md`](docs/mcp-log.md)). The discipline that matters isn't "use MCP," it's "use MCP, and still verify the result."
 
 ### 4. Dev-time vs. runtime architecture
 Two entirely separate diagrams matter here, and conflating them is a common mistake: *how the code got written* (Antigravity ↔ OAuth ↔ MCP server ↔ live docs) is completely different from *what the shopper's browser actually does at checkout* (Browser ↔ Google Pay JS SDK ↔ Google's payment sheet). See [`docs/architecture.md`](docs/architecture.md) for both.
@@ -67,6 +67,7 @@ Full blow-by-blow is in [`docs/BUILD_STORY.md`](docs/BUILD_STORY.md). Short vers
 - **An SDK load race condition.** The Google Pay button silently failed to render because the app's own code ran before the Google Pay JS SDK had finished loading. Fixed with an explicit readiness poller.
 - **No responsive design at all, initially.** The page used `align-items: center` with no media queries, which pushed content above the visible viewport on normal laptop screens. Fixed with a top-aligned layout and three real breakpoints.
 - **A misleading MCP documentation snippet.** One MCP response returned example code using `PANONLY`/`CRYPTOGRAM3DS` (no underscores) — subtly different from the real required values `PAN_ONLY`/`CRYPTOGRAM_3DS`. The generated code used the correct values anyway (verified against the real spec), but it's a good example of why blindly trusting a retrieved snippet is still a mistake.
+- **A fabricated enum in the first draft.** When implementing `checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE'`, the initial plan asserted `'DEFAULT_FOR_BUY_BUTTON'` as the default enum string. The actual standard default is `'DEFAULT'` (alongside `'CONTINUE_TO_REVIEW'`). Caught during grounding review, corrected in the plan, and explicitly logged in [`docs/mcp-log.md`](docs/mcp-log.md) as sourced from official API docs rather than MCP snippets.
 
 None of these are hidden — they're the actual record of what happened, kept in the docs on purpose.
 

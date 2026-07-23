@@ -51,6 +51,8 @@ Pure client-side. No backend, no database, by deliberate design — Google Pay h
 
 **Security property this gives for free:** no card data — raw or tokenized — ever touches this project's own code beyond receiving and immediately displaying/discarding it. `main.js` explicitly redacts the token before showing the final payload to the user (`token: '[OPAQUE_SABRE_TOKEN_RECEIVED]'`), even though it already came pre-tokenized from Google.
 
+**Why no step-up authentication (`assuranceDetails`):** Step 4 of the reference codelab notes `assuranceDetails` / 3D-Secure step-up signals for risk assessment. This was consciously reviewed and excluded because this project features no manual card entry fallback — Google Pay is the sole express checkout path — giving no secondary form to stay consistent with, and no backend service exists to ingest or act on step-up risk signals even if parsed.
+
 ---
 
 ## 2. Dev-time architecture — how the code got written
