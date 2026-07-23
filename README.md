@@ -55,6 +55,9 @@ The mechanism that lets a merchant charge a saved payment method on a recurring 
 ### 6. `cardFundingSource` signal
 Google Pay optionally reports whether a card is credit, debit, or prepaid. Real-world merchants use this to apply different interchange-based fees. This project treats a *missing* signal as a first-class case, not an afterthought — see the fallback-transparency fix below.
 
+### 7. What's real vs. what's mocked
+A plain-language explainer for non-developers answering what parts of this checkout page are genuine API network calls vs. HTML/CSS framing, what TEST mode means, and why fallback fields are labeled `(simulated)`. See [`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md).
+
 ---
 
 ## The real build story (bugs included)

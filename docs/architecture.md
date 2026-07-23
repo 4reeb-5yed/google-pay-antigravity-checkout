@@ -2,6 +2,8 @@
 
 Two architectures matter here, and they're not the same thing — conflating them is a common mistake in projects like this. **Runtime** is what a shopper's browser actually does. **Dev-time** is how the code got written in the first place.
 
+*(Looking for a plain-language explanation of what's real vs. mocked for non-developers? See [`HOW_IT_WORKS.md`](HOW_IT_WORKS.md).)*
+
 ---
 
 ## 1. Runtime architecture — what ships to the browser
