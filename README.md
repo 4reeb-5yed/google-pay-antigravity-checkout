@@ -2,8 +2,8 @@
 
 A working Google Pay checkout — one-time purchase, subscription billing, dynamic surcharge pricing, and express guest checkout — built almost entirely by *prompting* an AI coding agent connected to a live documentation server, instead of hand-writing the integration from memory or copy-pasted tutorials.
 
-**Live reference:** Google's official codelab this project follows:
-[*Google Pay API: Vibe-code checkout page with MCP servers and Antigravity*](https://codelabs.developers.google.com/codelabs/gpay-api-vibe-code-mcp-servers)
+🚀 **Live Demo:** [https://4reeb-5yed.github.io/google-pay-checkout/](https://4reeb-5yed.github.io/google-pay-checkout/)  
+📖 **Live Codelab Reference:** [*Google Pay API: Vibe-code checkout page with MCP servers and Antigravity*](https://codelabs.developers.google.com/codelabs/gpay-api-vibe-code-mcp-servers)
 
 ---
 
