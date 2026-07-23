@@ -23,6 +23,38 @@
     </header>
 
     <main class="checkout-card">
+      <section class="product-attributes">
+        <h2>Product Options <span class="required-tag">*Required for Checkout</span></h2>
+        
+        <!-- Size Selector -->
+        <div class="attribute-group">
+          <label class="attribute-label">Size:</label>
+          <div class="attribute-options" id="size-options">
+            <button type="button" class="attr-pill" data-type="size" data-value="S">S</button>
+            <button type="button" class="attr-pill" data-type="size" data-value="M">M</button>
+            <button type="button" class="attr-pill" data-type="size" data-value="L">L</button>
+            <button type="button" class="attr-pill" data-type="size" data-value="XL">XL</button>
+          </div>
+        </div>
+
+        <!-- Color Selector -->
+        <div class="attribute-group">
+          <label class="attribute-label">Color:</label>
+          <div class="attribute-options" id="color-options">
+            <button type="button" class="attr-pill color-pill" data-type="color" data-value="Space Gray"><span class="color-dot space-gray"></span>Space Gray</button>
+            <button type="button" class="attr-pill color-pill" data-type="color" data-value="Silver"><span class="color-dot silver"></span>Silver</button>
+            <button type="button" class="attr-pill color-pill" data-type="color" data-value="Midnight Blue"><span class="color-dot midnight"></span>Midnight Blue</button>
+          </div>
+        </div>
+
+        <!-- Attribute Validation Warning Banner -->
+        <div id="attribute-alert" class="alert-box hidden">
+          ⚠️ Please select both <strong>Size</strong> and <strong>Color</strong> before clicking Google Pay!
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
       <section class="order-summary">
         <h2>Order Summary</h2>
         <div class="plan-selector">
@@ -53,8 +85,8 @@
       </section>
 
       <section class="payment-section">
-        <h3>Express Payment</h3>
-        <p class="section-desc">Fast, secure checkout with Google Pay TEST environment.</p>
+        <h3>Express Guest Checkout</h3>
+        <p class="section-desc">Fast, automated address & email collection via Google Pay TEST environment.</p>
 
         <!-- Google Pay Button Container -->
         <div id="gpay-button-container" class="gpay-wrapper"></div>
@@ -68,12 +100,29 @@
     <div id="review-modal" class="modal-overlay">
       <div class="modal-card review-card">
         <h3>Review & Authorize Payment</h3>
-        <p class="modal-sub">Verify final itemized total including card funding surcharge before acquirer authorization.</p>
+        <p class="modal-sub">Verify itemized total, collected guest contact details, and shipping address before acquirer authorization.</p>
         
         <div class="review-breakdown">
           <div class="breakdown-row">
+            <span>Selected Options</span>
+            <span id="review-attributes" class="row-value highlight-text">None</span>
+          </div>
+          <div class="breakdown-row">
+            <span>Contact Email</span>
+            <span id="review-email" class="row-value">guest.developer@example.com</span>
+          </div>
+          <div class="breakdown-row">
+            <span>Shipping Address</span>
+            <span id="review-shipping" class="row-value address-text">123 Innovation Way, CA</span>
+          </div>
+          <div class="breakdown-row">
+            <span>Card Billing Address</span>
+            <span id="review-billing" class="row-value address-text">123 Innovation Way, CA</span>
+          </div>
+          <div class="divider"></div>
+          <div class="breakdown-row">
             <span>Base Order Amount</span>
-            <span id="review-base-price" class="row-value">$29.99</span>
+            <span id="review-base-price" class="row-value">$14.99/mo</span>
           </div>
           <div class="breakdown-row">
             <span>Payment Method</span>
@@ -81,12 +130,12 @@
           </div>
           <div class="breakdown-row">
             <span>Card Funding Surcharge (<span id="review-surcharge-rate">0.5%</span>)</span>
-            <span id="review-surcharge-amount" class="row-value surcharge-text">+$0.15</span>
+            <span id="review-surcharge-amount" class="row-value surcharge-text">+$0.07</span>
           </div>
           <div class="divider"></div>
           <div class="breakdown-row final-row">
             <span>Final Total to Charge</span>
-            <span id="review-final-total" class="row-value final-price">$30.14</span>
+            <span id="review-final-total" class="row-value final-price">$15.06/mo</span>
           </div>
         </div>
 

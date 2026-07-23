@@ -3,7 +3,8 @@
  * Handles PaymentsClient initialization, isReadyToPay gating, button rendering, and loadPaymentData calls.
  */
 
-import { GPAY_CONFIG, getIsReadyToPayRequest, getCardPaymentMethod } from './config.js';
+import { GPAY_CONFIG, getIsReadyToPayRequest } from './config.js';
+import { getGuestCardPaymentMethod } from './guestCheckout.js';
 
 let paymentsClient = null;
 
@@ -89,7 +90,8 @@ export function renderGooglePayButton(container, onClickHandler, options = {}) {
 
 /**
  * Prepares the PaymentDataRequest object for loadPaymentData.
- * Supports both standard one-time purchase requests and recurring transaction requests.
+ * Supports both standard one-time purchase requests and recurring transaction requests,
+ * incorporating Express Guest Checkout data collection parameters.
  * 
  * @param {Object} transactionData - Transaction info or recurringTransactionInfo object
  * @returns {Object} PaymentDataRequest
@@ -98,8 +100,13 @@ export function buildPaymentDataRequest(transactionData) {
   const baseRequest = {
     apiVersion: GPAY_CONFIG.apiVersion,
     apiVersionMinor: GPAY_CONFIG.apiVersionMinor,
-    allowedPaymentMethods: [getCardPaymentMethod()],
-    merchantInfo: GPAY_CONFIG.merchantInfo
+    allowedPaymentMethods: [getGuestCardPaymentMethod()],
+    merchantInfo: GPAY_CONFIG.merchantInfo,
+    emailRequired: true,
+    shippingAddressRequired: true,
+    shippingAddressParameters: {
+      phoneNumberRequired: true
+    }
   };
 
   // Check if payload is a recurring transaction request

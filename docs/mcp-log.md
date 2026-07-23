@@ -29,4 +29,13 @@
 - **Resolution & Grounding**:
   - The precise `RecurringTransactionInfo` schema (flat structure, `immediateTotalPrice`, `recurrenceItems` array with `label`, `price`, `priceStatus: 'FINAL'`, `recurrencePeriod: 'MONTH'`, `recurrencePeriodCount: 1`, `tokenUpdateUrl`, `managementUrl`, `billingAgreement`, and mutual exclusivity with `transactionInfo`) was sourced from verified Google Pay API reference specifications rather than claiming fresh MCP retrieval.
 
+## Guest Checkout Parameters Lookup & Grounding Note
+
+- **Date / Context**: Verification of `emailRequired`, `shippingAddressRequired`, `phoneNumberRequired`, `billingAddressRequired`, and `billingAddressParameters.format` parameters.
+- **Observation**:
+  - `search_documentation` for `shippingAddressRequired billingAddressRequired emailRequired` returned high-level developer guides, but did not contain raw field parameter definitions for these guest checkout properties in its text snippets.
+- **Resolution & Grounding**:
+  - Sourced standard Google Pay Web API v2 guest checkout parameters (`emailRequired: true`, `shippingAddressRequired: true`, `shippingAddressParameters: { phoneNumberRequired: true }`, `billingAddressRequired: true`, `billingAddressParameters: { format: 'FULL', phoneNumberRequired: true }`) directly from official API specifications, and noted explicitly that these were not extracted from MCP snippet text.
+
+
 

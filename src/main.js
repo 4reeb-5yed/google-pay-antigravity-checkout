@@ -1,6 +1,7 @@
 import { checkIsReadyToPay, renderGooglePayButton, triggerGooglePay } from './googlePayClient.js';
 import { parseCardFundingSource, calculateSurcharge } from './pricing.js';
 import { buildRecurringTransactionInfo, parseRecurringMitDetails } from './recurring.js';
+import { validateProductAttributes, parseGuestContactData } from './guestCheckout.js';
 
 // Active cart transaction state (defaults to Monthly Subscription)
 const currentCart = {
@@ -10,11 +11,18 @@ const currentCart = {
   isRecurring: true
 };
 
+// Selected product attributes state
+const selectedAttributes = {
+  size: null,
+  color: null
+};
+
 // Store transient state between Google Pay sheet completion & acquirer authorization
 let pendingAuthorization = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
+  setupAttributeListeners();
   setupPlanSwitcher();
   setupModalListeners();
 });
@@ -32,7 +40,7 @@ async function initApp() {
     const isReady = await checkIsReadyToPay();
 
     if (isReady) {
-      statusEl.innerHTML = '<span class="status-success">Google Pay is ready. Rendered official checkout button.</span>';
+      statusEl.innerHTML = '<span class="status-success">Google Pay is ready. Select product options and express checkout.</span>';
       
       // 2. Render Google Pay Button
       renderGooglePayButton(container, handlePaymentClick);
@@ -49,6 +57,41 @@ async function initApp() {
     console.error('Initialization error:', error);
     statusEl.innerHTML = '<span class="status-warning">⚠️ Google Pay SDK failed to load. If using Brave Browser or an AdBlocker, please disable Shields/AdBlocker for <code>localhost</code> and refresh.</span>';
   }
+}
+
+/**
+ * Setup product option button listeners (Size, Color)
+ */
+function setupAttributeListeners() {
+  const alertBox = document.getElementById('attribute-alert');
+  const sizePills = document.querySelectorAll('#size-options .attr-pill');
+  const colorPills = document.querySelectorAll('#color-options .attr-pill');
+
+  sizePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      sizePills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      selectedAttributes.size = pill.getAttribute('data-value');
+
+      const validation = validateProductAttributes(selectedAttributes);
+      if (validation.isValid && alertBox) {
+        alertBox.classList.add('hidden');
+      }
+    });
+  });
+
+  colorPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      colorPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      selectedAttributes.color = pill.getAttribute('data-value');
+
+      const validation = validateProductAttributes(selectedAttributes);
+      if (validation.isValid && alertBox) {
+        alertBox.classList.add('hidden');
+      }
+    });
+  });
 }
 
 /**
@@ -91,9 +134,20 @@ function setupPlanSwitcher() {
  */
 async function handlePaymentClick() {
   const statusEl = document.getElementById('checkout-status');
+  const alertBox = document.getElementById('attribute-alert');
+
+  // Mandatory Attribute Validation Gating
+  const attributeValidation = validateProductAttributes(selectedAttributes);
+  if (!attributeValidation.isValid) {
+    if (alertBox) {
+      alertBox.classList.remove('hidden');
+    }
+    statusEl.innerHTML = `<span class="status-error">⚠️ Please select <strong>${attributeValidation.missingAttributes.join(' & ')}</strong> before proceeding to Express Checkout!</span>`;
+    return;
+  }
 
   try {
-    statusEl.innerHTML = `<span class="status-info">Opening Google Pay payment sheet (${currentCart.isRecurring ? 'Recurring Subscription' : 'One-Time Purchase'})...</span>`;
+    statusEl.innerHTML = `<span class="status-info">Opening Google Pay Express Guest Checkout (${currentCart.isRecurring ? 'Recurring Subscription' : 'One-Time Purchase'})...</span>`;
 
     // 3. Build appropriate payload based on selected plan (recurring vs one-time)
     let transactionData;
@@ -107,14 +161,17 @@ async function handlePaymentClick() {
       };
     }
 
-    // Trigger loadPaymentData (googlePayClient handles dual-path execution)
+    // Trigger loadPaymentData (googlePayClient incorporates email, shipping, phone, & card billing address)
     const paymentData = await triggerGooglePay(transactionData);
 
-    // Extract payment method details and cardFundingSource signal via pricing module
+    // Extract card funding source & surcharge via pricing module
     const { fundingSource, isSimulated, cardNetwork } = parseCardFundingSource(paymentData);
 
     // Extract MIT details if recurring
     const mitDetails = currentCart.isRecurring ? parseRecurringMitDetails(paymentData) : null;
+
+    // Extract guest contact & address data via guestCheckout module
+    const guestContact = parseGuestContactData(paymentData);
 
     // Calculate dynamic surcharge based on card funding source via pricing module
     const basePriceNum = parseFloat(currentCart.totalPrice);
@@ -126,6 +183,8 @@ async function handlePaymentClick() {
     pendingAuthorization = {
       paymentData,
       isRecurring: currentCart.isRecurring,
+      selectedAttributes: attributeValidation.summary,
+      guestContact,
       basePrice: basePriceNum,
       cardFundingSource: fundingSource,
       isSimulated,
@@ -141,7 +200,12 @@ async function handlePaymentClick() {
     // Build display card label with explicit (simulated) marker if fallback fired
     const cardDisplayLabel = `${cardNetwork} (${fundingSource})${isSimulated ? ' (simulated)' : ''}`;
 
-    // Populate review modal
+    // Populate review modal with guest details & selected attributes
+    document.getElementById('review-attributes').textContent = attributeValidation.summary;
+    document.getElementById('review-email').textContent = guestContact.email;
+    document.getElementById('review-shipping').textContent = `${guestContact.shippingAddress.address1}, ${guestContact.shippingAddress.locality} (${guestContact.shippingAddress.phoneNumber})`;
+    document.getElementById('review-billing').textContent = `${guestContact.billingAddress.address1}, ${guestContact.billingAddress.locality}`;
+
     document.getElementById('review-base-price').textContent = `$${basePriceNum.toFixed(2)}${unitSuffix}`;
     document.getElementById('review-card-info').textContent = cardDisplayLabel;
     document.getElementById('review-surcharge-rate').textContent = rateLabel;
@@ -193,6 +257,10 @@ function setupModalListeners() {
         apiVersion: paymentData.apiVersion,
         apiVersionMinor: paymentData.apiVersionMinor,
         checkoutType: pendingAuthorization.isRecurring ? 'RECURRING_SUBSCRIPTION' : 'ONE_TIME_PURCHASE',
+        selectedProductOptions: pendingAuthorization.selectedAttributes,
+        guestEmail: pendingAuthorization.guestContact.email,
+        guestShippingAddress: pendingAuthorization.guestContact.shippingAddress,
+        guestBillingAddress: pendingAuthorization.guestContact.billingAddress,
         gateway: pendingAuthorization.gateway,
         cardFundingSource: pendingAuthorization.cardFundingSource,
         isFundingSourceSimulated: pendingAuthorization.isSimulated,
@@ -250,5 +318,6 @@ function setupModalListeners() {
     }
   });
 }
+
 
 
